@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#c85a32">
+  <title>LifeofTetangga — Operasional Laundry</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <section id="authScreen" class="auth-screen" aria-live="polite">
+    <div class="auth-card">
+      <div class="brand"><span class="brandmark">✦</span><div><b>LifeofTetangga Laundry</b><small>Operasional usaha</small></div></div>
+      <div id="authContent"><p>Memeriksa sesi masuk…</p></div>
+    </div>
+  </section>
+  <div class="app" id="appShell" hidden>
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle" aria-label="Buka menu">☰</button>
+      <div class="brand"><span class="brandmark">✦</span><div><b>LifeofTetangga <i>Laundry</i></b><small id="storeMeta">Menyambungkan ke data usaha…</small></div></div>
+      <div class="user"><span class="tag" id="dataBadge">TERHUBUNG</span><span class="avatar" id="userAvatar">L</span><div><b id="userName">Pengguna</b><small id="userRole">Akun</small></div><button class="btn secondary small" id="signOut">Keluar</button></div>
+    </header>
+    <div class="drawer-shade hidden" id="drawerShade"></div>
+    <div class="layout">
+      <aside id="sidebar">
+        <nav id="sideNav">
+          <section class="nav-group"><h2>OPERASIONAL</h2><button class="nav active" data-page="dashboard"><span>⌂</span>Dashboard</button><button class="nav" data-page="transaksi"><span>＋</span>Transaksi</button><button class="nav" data-page="kiloan"><span>▤</span>Pesanan Kiloan</button><button class="nav" data-page="pelanggan"><span>♙</span>Pelanggan &amp; Membership</button></section>
+          <section class="nav-group"><h2>MANAJEMEN</h2><button class="nav" data-page="layanan"><span>◇</span>Layanan &amp; Harga</button><button class="nav" data-page="stok"><span>▦</span>Stok</button><button class="nav" data-page="pengeluaran"><span>↘</span>Pengeluaran</button></section>
+          <section class="nav-group"><h2>KEUANGAN</h2><button class="nav" data-page="kas"><span>▣</span>Kas &amp; Pembayaran</button><button class="nav" data-page="tutup"><span>✓</span>Tutup Buku</button><button class="nav" data-page="laporan"><span>▥</span>Laporan Keuangan</button></section>
+          <section class="nav-group"><h2>PENGATURAN</h2><button class="nav" data-page="pengguna"><span>♧</span>Pengguna &amp; Hak Akses</button><button class="nav" data-page="usaha"><span>⚙</span>Pengaturan Usaha</button></section>
+        </nav>
+        <div class="demo-note"><b>Data tersimpan di Supabase</b>Tarif dan stok bertanda demo harus diperbarui sebelum transaksi nyata.</div>
+      </aside>
+      <main><div id="view" aria-live="polite"></div></main>
+    </div>
+  </div>
+  <div id="modalRoot"></div><div id="toast" class="toast hidden" role="status"></div>
+  <script src="./config.js"></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
