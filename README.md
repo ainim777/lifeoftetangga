@@ -27,6 +27,8 @@ Urutan migration yang telah dipasang di database:
 3. `20261015_demo_catalog.sql` — katalog layanan dan stok awal bertanda demo.
 4. `20261015_paid_price_guard.sql` — mencegah pembayaran dengan tarif demo atau nilai item yang tidak cocok dengan katalog.
 5. `20261015_private_rls_helpers.sql` — memindahkan fungsi SECURITY DEFINER untuk RLS ke schema privat yang tidak diekspos sebagai API.
+6. `20261015_policy_indexes.sql` — menambahkan indeks untuk jalur pemeriksaan RLS dan foreign key.
+7. `20261015_transaction_integrity.sql` — membatasi perubahan data transaksi setelah dibuat/dibayar dan menutup nota gagal sebagai batal dengan audit yang tetap utuh.
 
 Semua migration tersimpan di folder `supabase/` untuk pelacakan perubahan selanjutnya.
 
