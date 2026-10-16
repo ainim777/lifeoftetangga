@@ -20,6 +20,7 @@
       <div class="brand"><span class="brandmark">✦</span><div><b>LifeofTetangga <i>Laundry</i></b><small id="storeMeta">Menyambungkan ke data usaha…</small></div></div>
       <div class="user"><span class="tag" id="dataBadge">TERHUBUNG</span><span class="avatar" id="userAvatar">L</span><div><b id="userName">Pengguna</b><small id="userRole">Akun</small></div><button class="btn secondary small" id="signOut">Keluar</button></div>
     </header>
+    <div id="previewBanner" class="preview-banner" hidden><b>Mode pratinjau</b> Data di layar hanya contoh. Perubahan tidak disimpan ke database.</div>
     <div class="drawer-shade hidden" id="drawerShade"></div>
     <div class="layout">
       <aside id="sidebar">
@@ -29,7 +30,7 @@
           <section class="nav-group"><h2>KEUANGAN</h2><button class="nav" data-page="kas"><span>▣</span>Kas &amp; Pembayaran</button><button class="nav" data-page="tutup"><span>✓</span>Tutup Buku</button><button class="nav" data-page="laporan"><span>▥</span>Laporan Keuangan</button></section>
           <section class="nav-group"><h2>PENGATURAN</h2><button class="nav" data-page="pengguna"><span>♧</span>Pengguna &amp; Hak Akses</button><button class="nav" data-page="usaha"><span>⚙</span>Pengaturan Usaha</button></section>
         </nav>
-        <div class="demo-note"><b>Data tersimpan di Supabase</b>Tarif dan stok bertanda demo harus diperbarui sebelum transaksi nyata.</div>
+        <div class="demo-note" id="sideNote"><b>Data tersimpan di Supabase</b>Tarif dan stok bertanda demo harus diperbarui sebelum transaksi nyata.</div>
       </aside>
       <main><div id="view" aria-live="polite"></div></main>
     </div>
