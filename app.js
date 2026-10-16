@@ -72,7 +72,8 @@ function startDemoPreview(){
 }
 
 function localDate(value=new Date()){
-  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:store?.timezone||cfg.timezone||'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value);
+  const date=value instanceof Date?value:new Date(value);
+  const parts=new Intl.DateTimeFormat('en-CA',{timeZone:store?.timezone||cfg.timezone||'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
   const p=Object.fromEntries(parts.map(x=>[x.type,x.value]));return `${p.year}-${p.month}-${p.day}`;
 }
 function dateLabel(value){return value?new Intl.DateTimeFormat('id-ID',{timeZone:store?.timezone||cfg.timezone||'Asia/Jakarta',day:'2-digit',month:'short',year:'numeric'}).format(new Date(value)):''}
