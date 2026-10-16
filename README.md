@@ -9,6 +9,7 @@ Web operasional laundry berbahasa Indonesia, dengan antarmuka responsif dan data
 - Data tabel dilindungi RLS dan hanya dapat dibaca pengguna terautentikasi dengan profil aktif di outlet yang sama.
 - Akun pemilik pertama belum dibuat. Gunakan `supabase/owner_bootstrap.sql` setelah akun Auth dibuat di Dashboard Supabase.
 - Harga katalog dan jumlah stok awal ditandai demo. Pemilik perlu menggantinya sebelum mencatat transaksi nyata.
+- `demoPreview: true` di `config.js` membuka mode pratinjau otomatis dengan data contoh dan tanpa penyimpanan. Ubah menjadi `false` setelah akun pemilik siap untuk kembali ke login Supabase.
 
 ## Menyiapkan akun pemilik pertama
 
