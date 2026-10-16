@@ -7,11 +7,69 @@ const money=n=>'Rp '+Number(n||0).toLocaleString('id-ID');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const id=()=>crypto.randomUUID();
 let sb,session,profile,store;
+let demoMode=false;
 let page='dashboard';
 let data={customers:[],services:[],transactions:[],items:[],expenses:[],inventory:[],closings:[],traffic:[],orders:[],profiles:[],rewards:[]};
 const pageTitles={dashboard:'Dashboard',transaksi:'Transaksi',kiloan:'Pesanan Kiloan',pelanggan:'Pelanggan & Membership',layanan:'Layanan & Harga',stok:'Stok',pengeluaran:'Pengeluaran',kas:'Kas & Pembayaran',tutup:'Tutup Buku',laporan:'Laporan Keuangan',pengguna:'Pengguna & Hak Akses',usaha:'Pengaturan Usaha'};
 const paymentMethods=['Tunai','QR Mesin','QR Tetangga'];
 const channelLabel={self_service:'Self Service',kiloan_retail:'Kiloan Retail',b2b:'B2B'};
+
+function startDemoPreview(){
+  demoMode=true;const storeId='demo-lifeoftetangga',now=new Date(),dayOffset=n=>{const d=new Date(now);d.setDate(d.getDate()-n);return d},iso=(n,h=10)=>{const d=dayOffset(n);d.setHours(h,0,0,0);return d.toISOString()},today=localDate(now);
+  store={id:storeId,name:'LifeofTetangga Laundry',timezone:'Asia/Jakarta'};
+  profile={id:'demo-owner',store_id:storeId,name:'Pemilik (Demo)',role:'owner',active:true};
+  const serviceRows=[
+    ['Cuci Kering 5 KG','self_service_main',10000,'siklus'],['Cuci Kering 7 KG','self_service_main',20000,'siklus'],['Cuci Saja 5 KG','self_service_main',30000,'siklus'],['Cuci Saja 7 KG','self_service_main',40000,'siklus'],['Kering Saja 5 KG','self_service_main',50000,'siklus'],['Kering Saja 7 KG','self_service_main',60000,'siklus'],['Drop Off','addon',5000,'layanan'],['Lipat','addon',10000,'layanan'],['Sewa Setrika','addon',15000,'layanan'],['Antar Jemput','addon',20000,'layanan'],['Detergen Scoop Additional','addon',25000,'scoop'],['Detergen Kemasan','product',12000,'pcs'],['Pewangi Kemasan','product',24000,'pcs'],['Plastik Merah','product',36000,'pak'],['Cuci Kering','kiloan_service',10000,'kg'],['Cuci Kering + Setrika','kiloan_service',20000,'kg'],['Setrika Saja','kiloan_service',30000,'kg']
+  ];
+  data.services=serviceRows.map(([name,category,price,unit],i)=>({id:`demo-service-${i+1}`,store_id:storeId,name,category,price,unit,active:true,estimated_unit_cost:Math.round(price*.28),price_is_demo:true}));
+  data.customers=[
+    {id:'demo-c1',store_id:storeId,name:'Nadia Putri',whatsapp:'0812-0000-0101',customer_type:'retail',membership_uses:4},
+    {id:'demo-c2',store_id:storeId,name:'Budi Santoso',whatsapp:'0812-0000-0102',customer_type:'retail',membership_uses:7},
+    {id:'demo-c3',store_id:storeId,name:'Kantor Sejahtera',whatsapp:'0812-0000-0103',customer_type:'b2b',membership_uses:0},
+    {id:'demo-c4',store_id:storeId,name:'Siti Rahma',whatsapp:'0812-0000-0104',customer_type:'retail',membership_uses:10},
+    {id:'demo-c5',store_id:storeId,name:'Dewi Lestari',whatsapp:'0812-0000-0105',customer_type:'retail',membership_uses:2}
+  ];
+  const tickets=[
+    [0,'demo-c1','self_service','paid','Tunai',35000,'SS-261016-001','Cuci Kering 5 KG'],
+    [0,'demo-c2','kiloan_retail','unpaid',null,80000,'KT-261016-002','Cuci Kering + Setrika'],
+    [0,'demo-c3','b2b','paid','QR Mesin',240000,'B2B-261016-003','Cuci Kering + Setrika'],
+    [1,'demo-c4','self_service','paid','QR Tetangga',50000,'SS-261015-004','Cuci Saja 7 KG'],
+    [2,'demo-c5','kiloan_retail','paid','Tunai',60000,'KT-261014-005','Cuci Kering'],
+    [3,'demo-c2','self_service','paid','QR Mesin',42000,'SS-261013-006','Cuci Kering 7 KG'],
+    [6,'demo-c1','kiloan_retail','paid','QR Tetangga',90000,'KT-261010-007','Cuci Kering + Setrika'],
+    [14,'demo-c4','self_service','paid','Tunai',30000,'SS-261002-008','Cuci Saja 5 KG'],
+    [35,'demo-c5','kiloan_retail','paid','QR Mesin',140000,'KT-260911-009','Cuci Kering + Setrika'],
+    [62,'demo-c2','b2b','paid','QR Tetangga',320000,'B2B-260915-010','Cuci Kering'],
+    [95,'demo-c1','self_service','paid','Tunai',25000,'SS-260713-011','Cuci Kering 5 KG'],
+    [128,'demo-c4','kiloan_retail','paid','QR Mesin',110000,'KT-260610-012','Setrika Saja'],
+    [158,'demo-c5','self_service','paid','QR Tetangga',45000,'SS-260511-013','Cuci Kering 7 KG'],
+    [176,'demo-c2','kiloan_retail','paid','Tunai',75000,'KT-260423-014','Cuci Kering + Setrika']
+  ];
+  data.transactions=tickets.map(([age,customer_id,channel,status,payment_method,total,invoice_no,service],i)=>({id:`demo-t${i+1}`,store_id:storeId,customer_id,channel,status,payment_method,subtotal:total,membership_discount:0,total,invoice_no,created_at:iso(age,9+i%8),paid_at:status==='paid'?iso(age,9+i%8):null,created_by:profile.id}));
+  data.items=tickets.map(([, , , , ,total, ,service],i)=>({id:`demo-item${i+1}`,store_id:storeId,transaction_id:`demo-t${i+1}`,name:service,scope:'service',quantity:1,unit_price:total,unit_cost:Math.round(total*.28),line_cost:Math.round(total*.28),line_total:total}));
+  data.expenses=[
+    {id:'demo-e1',store_id:storeId,category:'Utilitas',amount:85000,payment_method:'Tunai',note:'Listrik dan air',spent_at:iso(0,13)},
+    {id:'demo-e2',store_id:storeId,category:'Perlengkapan',amount:45000,payment_method:'QR Mesin',note:'Bahan laundry',spent_at:iso(0,15)},
+    {id:'demo-e3',store_id:storeId,category:'Operasional',amount:120000,payment_method:'QR Tetangga',note:'Perawatan mesin',spent_at:iso(3)},
+    {id:'demo-e4',store_id:storeId,category:'Utilitas',amount:720000,payment_method:'Tunai',note:'Tagihan bulanan',spent_at:iso(32)},
+    {id:'demo-e5',store_id:storeId,category:'Perlengkapan',amount:540000,payment_method:'QR Mesin',note:'Restok bahan',spent_at:iso(66)},
+    {id:'demo-e6',store_id:storeId,category:'Operasional',amount:410000,payment_method:'Tunai',note:'Servis mesin',spent_at:iso(101)},
+    {id:'demo-e7',store_id:storeId,category:'Utilitas',amount:690000,payment_method:'QR Tetangga',note:'Tagihan bulanan',spent_at:iso(138)}
+  ];
+  data.inventory=[
+    ['Detergen Kemasan','product','pcs',12,10,12000],['Pewangi Kemasan','product','pcs',8,10,9000],['Plastik Merah','product','pak',6,8,4000],['Detergen curah','operational_supply','kg',4,5,18000],['Pewangi laundry','operational_supply','liter',2,3,22000],['Kantong laundry','operational_supply','pcs',45,20,800]
+  ].map(([name,category,unit,quantity,minimum_quantity,unit_cost],i)=>({id:`demo-stock${i+1}`,store_id:storeId,name,category,unit,quantity,minimum_quantity,unit_cost,is_demo:true}));
+  data.traffic=Array.from({length:181},(_,i)=>{const age=180-i,d=dayOffset(age);return {id:`demo-traffic${age}`,store_id:storeId,business_date:localDate(d),visitors:18+(age*7%19),note:'Data contoh',created_by:profile.id}});
+  data.orders=[
+    {id:'demo-o1',store_id:storeId,transaction_id:'demo-t2',order_no:'KT-261016-002',weight_kg:4,status:'Masuk',created_at:iso(0)},
+    {id:'demo-o2',store_id:storeId,transaction_id:'demo-t5',order_no:'KT-261014-005',weight_kg:3,status:'Proses',created_at:iso(2)},
+    {id:'demo-o3',store_id:storeId,transaction_id:'demo-t7',order_no:'KT-261010-007',weight_kg:5,status:'Selesai',created_at:iso(6)},
+    {id:'demo-o4',store_id:storeId,transaction_id:'demo-t9',order_no:'KT-260911-009',weight_kg:7,status:'Diambil',created_at:iso(35)}
+  ];
+  data.closings=[];data.profiles=[{id:profile.id,name:profile.name,role:'owner',active:true},{id:'demo-cashier',name:'Kasir (Demo)',role:'cashier',active:true}];
+  data.rewards=[{id:'demo-r1',store_id:storeId,customer_id:'demo-c4',earned_on_use:10,discount_percent:25,expires_at:iso(-24),used_at:null,revoked_at:null}];
+  session={user:{id:profile.id}};$('#authScreen').hidden=true;$('#appShell').hidden=false;$('#storeMeta').textContent='Data contoh · tidak tersimpan';$('#dataBadge').textContent='PRATINJAU';$('#userName').textContent=profile.name;$('#userRole').textContent='Mode demo';$('#userAvatar').textContent='D';$('#signOut').textContent='Keluar demo';$('#previewBanner').hidden=false;$('#sideNote').innerHTML='<b>Mode pratinjau</b>Semua angka dan pelanggan di halaman ini adalah data contoh.';render();
+}
 
 function localDate(value=new Date()){
   const parts=new Intl.DateTimeFormat('en-CA',{timeZone:store?.timezone||cfg.timezone||'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value);
@@ -153,7 +211,7 @@ function serviceOptions(categories){return data.services.filter(s=>categories.in
 function serviceOption(s){return `<option value="${s.id}" data-price="${s.price}" data-demo="${s.price_is_demo}">${esc(s.name)} · ${money(s.price)} / ${esc(s.unit)}${s.price_is_demo?' · demo':''}</option>`}
 function openTransaction(type='Self Service'){
   const isSelf=type==='Self Service',isB2B=type==='B2B',main=isSelf?serviceOptions(['self_service_main']):serviceOptions(['kiloan_service']),extra=isSelf?serviceOptions(['addon','product']):[];
-  modal(`Transaksi ${type}`,`<form id="transactionForm" data-type="${type}"><div class="notice">Pembayaran lunas menyimpan transaksi ke database. Reward akan dihitung otomatis oleh sistem.</div><div class="form-grid" style="margin-top:14px"><div class="field"><label>Nama pelanggan ${isSelf?'(opsional)':' '}</label><input name="customerName" ${isSelf?'':'required'} placeholder="Nama lengkap"></div><div class="field"><label>Nomor WhatsApp ${isSelf?'(opsional)':' '}</label><input name="whatsapp" ${isSelf?'':'required'} placeholder="08xxxxxxxxxx"></div>${!isSelf?`<div class="field"><label>Nomor pesanan</label><input name="invoice" placeholder="Dibuat otomatis jika kosong"></div><div class="field"><label>Berat (kg)</label><input name="weight" type="number" min="0.1" step="0.1" value="1" required></div>`:''}<div class="field wide"><label>${isSelf?'Jasa utama Self Service':'Layanan Kiloan'}</label><select name="mainService" required>${main.map(serviceOption).join('')}</select></div>${isSelf&&extra.length?`<div class="field wide"><label>Add-on dan produk (opsional)</label><div class="checkbox-list">${extra.map(s=>`<label class="check-item"><input type="checkbox" name="extraService" value="${s.id}" data-price="${s.price}" data-demo="${s.price_is_demo}">${esc(s.name)} · ${money(s.price)}${s.price_is_demo?' <span class="demo-label">demo</span>':''}</label>`).join('')}</div></div>`:''}<div class="field"><label>Status pembayaran</label><select name="paymentStatus"><option value="paid">Lunas</option><option value="unpaid">Belum lunas</option></select></div><div class="field"><label>Metode pembayaran</label><select name="paymentMethod">${paymentMethods.map(m=>`<option>${m}</option>`).join('')}</select></div></div><div class="amount-box" style="margin-top:14px"><span>Perkiraan total</span><span id="transactionTotal">${money(Number(main[0]?.price||0))}</span></div><div class="auth-error" id="formError"></div><button class="btn" style="margin-top:14px">Simpan transaksi</button></form>`);
+  modal(`Transaksi ${type}`,`<form id="transactionForm" data-type="${type}"><div class="notice">${demoMode?'Pratinjau formulir. Data contoh tidak akan tersimpan.':'Pembayaran lunas menyimpan transaksi ke database. Reward akan dihitung otomatis oleh sistem.'}</div><div class="form-grid" style="margin-top:14px"><div class="field"><label>Nama pelanggan ${isSelf?'(opsional)':' '}</label><input name="customerName" ${isSelf?'':'required'} placeholder="Nama lengkap"></div><div class="field"><label>Nomor WhatsApp ${isSelf?'(opsional)':' '}</label><input name="whatsapp" ${isSelf?'':'required'} placeholder="08xxxxxxxxxx"></div>${!isSelf?`<div class="field"><label>Nomor pesanan</label><input name="invoice" placeholder="Dibuat otomatis jika kosong"></div><div class="field"><label>Berat (kg)</label><input name="weight" type="number" min="0.1" step="0.1" value="1" required></div>`:''}<div class="field wide"><label>${isSelf?'Jasa utama Self Service':'Layanan Kiloan'}</label><select name="mainService" required>${main.map(serviceOption).join('')}</select></div>${isSelf&&extra.length?`<div class="field wide"><label>Add-on dan produk (opsional)</label><div class="checkbox-list">${extra.map(s=>`<label class="check-item"><input type="checkbox" name="extraService" value="${s.id}" data-price="${s.price}" data-demo="${s.price_is_demo}">${esc(s.name)} · ${money(s.price)}${s.price_is_demo?' <span class="demo-label">demo</span>':''}</label>`).join('')}</div></div>`:''}<div class="field"><label>Status pembayaran</label><select name="paymentStatus"><option value="paid">Lunas</option><option value="unpaid">Belum lunas</option></select></div><div class="field"><label>Metode pembayaran</label><select name="paymentMethod">${paymentMethods.map(m=>`<option>${m}</option>`).join('')}</select></div></div><div class="amount-box" style="margin-top:14px"><span>Perkiraan total</span><span id="transactionTotal">${money(Number(main[0]?.price||0))}</span></div><div class="auth-error" id="formError"></div><button class="btn" style="margin-top:14px">${demoMode?'Tutup pratinjau':'Simpan transaksi'}</button></form>`);
   const f=$('#transactionForm');f.addEventListener('input',updateTransactionTotal);f.addEventListener('change',updateTransactionTotal);f.addEventListener('submit',saveTransaction);
 }
 function readTransactionLines(form){
@@ -210,15 +268,18 @@ document.addEventListener('click',async e=>{
   else if(a==='modal-backdrop'&&e.target===b)closeModal();
   else if(a==='export-report')exportReport();
 });
-document.addEventListener('change',e=>{const o=e.target.closest('[data-action="order-status"]');if(o)updateOrder(o.dataset.id,o.value)});
+document.addEventListener('change',e=>{const o=e.target.closest('[data-action="order-status"]');if(o){if(demoMode){toast('Mode pratinjau — status pesanan contoh tidak disimpan.');render();return}updateOrder(o.dataset.id,o.value)}});
+document.addEventListener('submit',e=>{if(!demoMode)return;e.preventDefault();e.stopImmediatePropagation();closeModal();toast('Mode pratinjau — perubahan tidak disimpan ke database.')},true);
 document.addEventListener('submit',e=>{if(e.target.id==='closingForm')saveClosing(e)},{capture:true});
 document.addEventListener('submit',async e=>{if(e.target.id==='storeForm'){e.preventDefault();if(profile.role!=='owner')return toast('Hanya pemilik yang dapat mengubah pengaturan.');const f=e.target,r=await sb.from('stores').update({name:f.elements.name.value.trim(),timezone:f.elements.timezone.value}).eq('id',store.id);if(r.error)return toast(r.error.message);await refresh();toast('Pengaturan usaha tersimpan.')}},{capture:true});
-$('#menuToggle').onclick=()=>{const aside=$('#sidebar');aside.classList.toggle('mobile-open');$('#drawerShade').classList.toggle('hidden')};$('#drawerShade').onclick=()=>{$('#sidebar').classList.remove('mobile-open');$('#drawerShade').classList.add('hidden')};$('#signOut').onclick=()=>sb.auth.signOut();
+$('#menuToggle').onclick=()=>{const aside=$('#sidebar');aside.classList.toggle('mobile-open');$('#drawerShade').classList.toggle('hidden')};$('#drawerShade').onclick=()=>{$('#sidebar').classList.remove('mobile-open');$('#drawerShade').classList.add('hidden')};$('#signOut').onclick=()=>demoMode?toast('Kamu sedang berada di mode pratinjau.'):sb.auth.signOut();
 
-try{
-  if(!cfg.supabaseUrl||!cfg.publishableKey||!cfg.storeId)throw Error('Konfigurasi Supabase belum lengkap.');
-  sb=createClient(cfg.supabaseUrl,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  const {data:{session:current},error}=await sb.auth.getSession();if(error)throw error;
-  await startApp(current);
-  sb.auth.onAuthStateChange((_event,next)=>{startApp(next)});
-}catch(e){fatal('Koneksi Supabase belum bisa dimulai. '+(e.message||''))}
+if(cfg.demoPreview){startDemoPreview()}else{
+  try{
+    if(!cfg.supabaseUrl||!cfg.publishableKey||!cfg.storeId)throw Error('Konfigurasi Supabase belum lengkap.');
+    sb=createClient(cfg.supabaseUrl,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    const {data:{session:current},error}=await sb.auth.getSession();if(error)throw error;
+    await startApp(current);
+    sb.auth.onAuthStateChange((_event,next)=>{startApp(next)});
+  }catch(e){fatal('Koneksi Supabase belum bisa dimulai. '+(e.message||''))}
+}
