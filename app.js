@@ -274,7 +274,7 @@ document.addEventListener('submit',e=>{if(e.target.id==='closingForm')saveClosin
 document.addEventListener('submit',async e=>{if(e.target.id==='storeForm'){e.preventDefault();if(profile.role!=='owner')return toast('Hanya pemilik yang dapat mengubah pengaturan.');const f=e.target,r=await sb.from('stores').update({name:f.elements.name.value.trim(),timezone:f.elements.timezone.value}).eq('id',store.id);if(r.error)return toast(r.error.message);await refresh();toast('Pengaturan usaha tersimpan.')}},{capture:true});
 $('#menuToggle').onclick=()=>{const aside=$('#sidebar');aside.classList.toggle('mobile-open');$('#drawerShade').classList.toggle('hidden')};$('#drawerShade').onclick=()=>{$('#sidebar').classList.remove('mobile-open');$('#drawerShade').classList.add('hidden')};$('#signOut').onclick=()=>demoMode?toast('Kamu sedang berada di mode pratinjau.'):sb.auth.signOut();
 
-if(cfg.demoPreview){try{startDemoPreview()}catch(e){console.error(e);fatal('Mode pratinjau belum dapat dimuat. '+(e.message||''))}}else{
+if(cfg.demoPreview){try{startDemoPreview()}catch(e){console.error(e);fatal('Mode pratinjau belum dapat dimuat. '+(e.stack||e.message||''))}}else{
   try{
     if(!cfg.supabaseUrl||!cfg.publishableKey||!cfg.storeId)throw Error('Konfigurasi Supabase belum lengkap.');
     sb=createClient(cfg.supabaseUrl,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
