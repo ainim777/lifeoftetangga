@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#c85a32"><title>Lacak Cucian · LifeofTetangga</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="tracking-page">
+  <main class="tracking-card">
+    <div class="brand"><span class="brandmark">✦</span><div><b>LifeofTetangga Laundry</b><small>Pelacakan pesanan</small></div></div>
+    <div id="trackingContent"><p>Memuat status pesanan…</p></div>
+  </main>
+  <script src="./config.js"></script>
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+    const host=document.querySelector('#trackingContent'),token=new URLSearchParams(location.search).get('token'),cfg=window.LFT_CONFIG||{};
+    if(!token){host.innerHTML='<h1>Tautan tidak lengkap</h1><p>Periksa kembali tautan pelacakan dari outlet.</p>'}
+    else if(!cfg.supabaseUrl||!cfg.publishableKey){host.innerHTML='<h1>Pelacakan belum tersedia</h1><p>Pengaturan aplikasi belum lengkap.</p>'}
+    else {try{const db=createClient(cfg.supabaseUrl,cfg.publishableKey),{data,error}=await db.rpc('get_order_tracking',{p_token:token});if(error||!data){host.innerHTML='<h1>Pesanan tidak ditemukan</h1><p>Tautan mungkin sudah tidak berlaku. Hubungi outlet untuk bantuan.</p>'}else{const labels={cuci:'Cuci',pengeringan:'Pengeringan',setrika:'Setrika',packing:'Pengemasan',siap_diambil:'Siap diambil'},status=data.status;host.innerHTML=`<div class="eyebrow">PESANAN ${data.order_no}</div><h1>${status}</h1><p>Status terbaru pesanan cucian Anda.</p><ol class="tracking-steps">${data.steps.map(s=>`<li class="${s.status==='selesai'?'done':s.status==='proses'?'current':''}"><span>${labels[s.stage]||s.stage}</span><b>${s.status==='selesai'?'Selesai':s.status==='proses'?'Sedang dikerjakan':'Menunggu'}</b></li>`).join('')}</ol><p class="stat-foot">Status terakhir diperbarui berdasarkan catatan outlet. Untuk informasi lebih lanjut, hubungi LifeofTetangga Laundry.</p>`}}catch{host.innerHTML='<h1>Status belum dapat dimuat</h1><p>Coba buka kembali beberapa saat lagi atau hubungi outlet.</p>'}}
+  </script>
+</body>
+</html>
