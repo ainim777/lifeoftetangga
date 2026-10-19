@@ -48,6 +48,7 @@ function startDemoPreview(){
     [1,'demo-c1','shoe_service','paid','Tunai',35000,'SP-261015-015','Cuci Sepatu Reguler']
   ];
   data.transactions=tickets.map(([age,customer_id,channel,status,payment_method,total,invoice_no,service],i)=>({id:`demo-t${i+1}`,store_id:storeId,customer_id,channel,status,payment_method,subtotal:total,membership_discount:0,total,invoice_no,created_at:iso(age,9+i%8),paid_at:status==='paid'?iso(age,9+i%8):null,created_by:profile.id}));
+  data.payments=tickets.map(([age,, ,status,payment_method,total,,],i)=>status==='paid'?({id:`demo-payment${i+1}`,store_id:storeId,transaction_id:`demo-t${i+1}`,amount:total,payment_method,paid_at:iso(age,9+i%8)}):null).filter(Boolean);
   data.items=tickets.map(([, , , , ,total, ,service],i)=>({id:`demo-item${i+1}`,store_id:storeId,transaction_id:`demo-t${i+1}`,name:service,scope:'service',quantity:1,unit_price:total,unit_cost:Math.round(total*.28),line_cost:Math.round(total*.28),line_total:total}));
   data.expenses=[
     {id:'demo-e1',store_id:storeId,category:'Utilitas',amount:85000,payment_method:'Tunai',note:'Listrik dan air',spent_at:iso(0,13)},
