@@ -6,7 +6,7 @@ const $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const money=n=>'Rp '+Number(n||0).toLocaleString('id-ID');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const id=()=>crypto.randomUUID();
-let sb,session,profile,store;
+let sb,session,profile,store,customerChannel,customerRefreshTimer;
 let demoMode=false;
 let page='dashboard';
 let transactionType='Self Service';
@@ -117,16 +117,17 @@ async function loadData(){
   if(data.memberships.length){const ids=[...new Set(data.memberships.map(m=>m.store_id))],out=await sb.from('stores').select('id,name,timezone').in('id',ids);if(!out.error){data.outlets=out.data||[];const sw=$('#outletSwitcher');sw.hidden=data.outlets.length<2;sw.innerHTML=data.outlets.map(x=>`<option value="${x.id}" ${x.id===profile.store_id?'selected':''}>${esc(x.name)}</option>`).join('');sw.onchange=async()=>{const m=data.memberships.find(x=>x.store_id===sw.value);if(!m)return;profile.store_id=sw.value;store=data.outlets.find(x=>x.id===sw.value);profile.role=m.role==='master'?'owner':m.role;$('#storeMeta').textContent=store.name+' · Data tersimpan di Supabase';await refresh()}}}
 }
 async function refresh(){try{await loadData();render()}catch(e){toast('Data tidak berhasil dimuat. Periksa koneksi dan akses akun.');console.error(e)}}
+function subscribeCustomerUpdates(){if(demoMode||!sb||!session)return;if(customerChannel)sb.removeChannel(customerChannel);customerChannel=sb.channel(`customer-sync-${session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'customers'},()=>{clearTimeout(customerRefreshTimer);customerRefreshTimer=setTimeout(()=>refresh(),500)}).subscribe()}
 async function startApp(current){
   session=current;
-  if(!current){loginScreen();return}
+  if(!current){if(customerChannel){sb.removeChannel(customerChannel);customerChannel=null}loginScreen();return}
   const p=await sb.from('profiles').select('id,store_id,name,role,active').eq('id',current.user.id).maybeSingle();
   if(p.error||!p.data||!p.data.active){noProfileScreen();return}
   profile=p.data;$('#authScreen').hidden=true;$('#appShell').hidden=false;
   try{const membership=await sb.from('store_memberships').select('*').eq('user_id',current.user.id).eq('active',true).order('created_at');if(!membership.error&&membership.data?.length){data.memberships=membership.data;if(!membership.data.some(m=>m.store_id===profile.store_id))profile.store_id=membership.data[0].store_id;const active=membership.data.find(m=>m.store_id===profile.store_id);profile.role=active?.role==='master'?'owner':active?.role||profile.role}}catch{}
   $('#addOutlet').hidden=profile.role!=='owner';
   $('#userName').textContent=profile.name;$('#userRole').textContent=profile.role==='owner'?'Pemilik':'Kasir';$('#userAvatar').textContent=(profile.name||'L').trim().charAt(0).toUpperCase();
-  try{await loadData();$('#storeMeta').textContent=store.name+' · Data tersimpan di Supabase';render()}catch(e){fatal('Koneksi ke tabel usaha belum siap. '+(e.message||''))}
+  try{await loadData();$('#storeMeta').textContent=store.name+' · Data tersimpan di Supabase';render();subscribeCustomerUpdates()}catch(e){fatal('Koneksi ke tabel usaha belum siap. '+(e.message||''))}
 }
 
 function head(kicker,description,actions=''){return `<header class="page-head"><div><div class="eyebrow">${esc(kicker)}</div><h1>${pageTitles[page]}</h1><p>${esc(description)}</p></div><div class="page-actions">${actions}</div></header>`}
