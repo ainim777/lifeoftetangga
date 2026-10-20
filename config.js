@@ -4,5 +4,5 @@ window.LFT_CONFIG = Object.freeze({
   publishableKey: "sb_publishable_s0GNSOF-zUeOHeWbSnPWIw_QodxQXb0",
   storeId: "2e378398-b0cb-4530-a473-a0102d25fc35",
   timezone: "Asia/Jakarta",
-  demoPreview: true
+  demoPreview: false
 });
